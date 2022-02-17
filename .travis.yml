@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t deepdatadude/complex -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true deepdatadude/complex npm test
+
+after_success:
+  - docker build -t deepdatadude/complex-client ./client
+  - docker build -t deepdatadude/complex-nginx ./nginx
+  - docker build -t deepdatadude/complex-server ./server
+  - docker build -t deepdatadude/complex-worker ./worker
+  - echo "$DOCKER_PWD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push deepdatadude/complex-client
+  - docker push deepdatadude/complex-nginx
+  - docker push deepdatadude/complex-server
+  - docker push deepdatadude/complex-worker
